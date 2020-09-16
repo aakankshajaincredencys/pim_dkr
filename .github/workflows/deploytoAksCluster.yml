@@ -1,0 +1,50 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: ccalliancereg.azurecr.io
+        username: ${{ secrets.acr_ccalliancereg_username }}
+        password: ${{ secrets.acr_ccalliancereg_password }}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t ccalliancereg.azurecr.io/ccalliancecluster:${{ github.sha }}
+        docker push ccalliancereg.azurecr.io/ccalliancecluster:${{ github.sha }}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{ secrets.aks_ccalliancecluster_kubeConfig }}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep ccalliancecluster25ec | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace ccalliancecluster25ec`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: ccalliancecluster25ec
+        container-registry-url: ccalliancereg.azurecr.io
+        container-registry-username: ${{ secrets.acr_ccalliancereg_username }}
+        container-registry-password: ${{ secrets.acr_ccalliancereg_password }}
+        secret-name: ccalliancecldockerauth
+       
+    - uses: azure/k8s-deploy@v1
+      with:
+        namespace: ccalliancecluster25ec
+        manifests: |
+          manifests/deployment.yml
+          manifests/service.yml
+        images: |
+          ccalliancereg.azurecr.io/ccalliancecluster:${{ github.sha }}
+        imagepullsecrets: |
+          ccalliancecldockerauth
