@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "ccalliancecluster-b485"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "ccalliancecluster-b485"
+  template:
+    metadata:
+      labels:
+        app: "ccalliancecluster-b485"
+    spec:
+      containers:
+        - name: "ccalliancecluster-b485"
+          image: "ccalliancereg.azurecr.io/ccalliancecluster"
+          ports:
+          - containerPort: 80
