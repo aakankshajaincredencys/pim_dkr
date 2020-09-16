@@ -1,0 +1,25 @@
+phases:
+  build:
+    commands:
+      - "echo Build started on `date`"
+      - "echo Building the Docker image..."
+      - docker build -t pim .
+      - docker tag pim:latest 094092028482.dkr.ecr.ap-south-1.amazonaws.com/pim:latest
+  post_build:
+    commands:
+      - "echo Build completed on `date`"
+      - "echo Pushing the Docker image..."
+      - docker push 094092028482.dkr.ecr.ap-south-1.amazonaws.com/pim:latest
+  pre_build:
+    commands:
+      - docker -v
+      - alias aws='docker run --rm -it amazon/aws-cli'
+      - "echo Logging in to Docker Hub..."
+      - INPUT=`aws ecr get-login --region ap-south-1`
+      - "echo $INPUT"
+      - SUBSTRING=$(echo $INPUT| cut -d' ' -f 6)
+      - "echo $SUBSTRING"
+      - SUBSTRING2=$(echo $INPUT| cut -d' ' -f 9 | cut -d'/' -f 3)
+      - "echo $SUBSTRING2"
+      - aws ecr --region ap-south-1 | docker login -u AWS -p $SUBSTRING $SUBSTRING2
+version: 0.2

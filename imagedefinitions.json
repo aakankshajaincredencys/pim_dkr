@@ -1,0 +1,6 @@
+[
+  {
+      "name": "citroen-staging-container-ps",
+      "imageUri": "094092028482.dkr.ecr.ap-south-1.amazonaws.com/pim:latest"
+  }
+]
