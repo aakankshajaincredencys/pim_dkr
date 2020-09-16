@@ -55,10 +55,6 @@ RUN echo '. /etc/apache2/envvars' >> /root/run_apache.sh && \
 
 CMD /root/run_apache.sh
 
-# volumes
-VOLUME /var/www/html
-WORKDIR /var/www/html
-
 # Get Pimcore content
 RUN chown -R www-data:www-data /var/www/html
 
@@ -68,5 +64,12 @@ EXPOSE 80
 # Update the default run.sh
 ADD run.sh /root/run.sh
 
+RUN chmod 755 /root/run.sh
+
 # Execut the run.sh 
 CMD /root/run.sh
+
+# volumes
+VOLUME /var/www/html
+WORKDIR /var/www/html
+
